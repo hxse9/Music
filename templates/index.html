@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="hero">
+    <h1>오늘의 <span style="color: #3fb950;">추천 음악</span>을 만나보세요</h1>
+    <p>당신의 취향을 저격할 나만 알고 싶은 명곡들을 확인하세요.</p>
+</section>
+
+<div class="feed">
+    {% if posts %}
+        {% for post in posts %}
+        <article class="post-card">
+            <div class="post-header">
+                <div class="post-meta">
+                    <h3>{{ post.title }}</h3>
+                    <div class="artist">{{ post.artist }}</div>
+                </div>
+                <div class="user-info">
+                    ✍️ <strong>{{ post.nickname }}</strong>
+                    {% if session.get('user_id') == post.user_id %}
+                    <span style="margin-left: 10px; display: flex; gap: 8px;">
+                        <a href="{{ url_for('edit_post', post_id=post.id) }}" style="color: var(--text-secondary); text-decoration: none; font-size: 13px;">수정</a>
+                        <form action="{{ url_for('delete_post', post_id=post.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('정말 삭제하시겠습니까?');">
+                            <button type="submit" style="background: none; border: none; color: rgba(218, 54, 51, 0.8); cursor: pointer; font-size: 13px;">삭제</button>
+                        </form>
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            {% if post.genre_tag %}
+            <div class="tags">
+                {% for tag in post.genre_tag.split(',') %}
+                    {% if tag.strip() %}
+                    <span class="tag">{{ tag.strip() }}</span>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% if post.youtube_url %}
+            <div class="video-container">
+                {% set video_id = post.youtube_url.replace('https://www.youtube.com/watch?v=', '').replace('https://youtu.be/', '').split('&')[0] %}
+                <iframe src="https://www.youtube.com/embed/{{ video_id }}" allowfullscreen loading="lazy"></iframe>
+            </div>
+            {% endif %}
+
+            <div class="content-body">
+                <p>{{ post.content }}</p>
+            </div>
+
+            <div class="post-footer">
+                <div class="footer-actions">
+                    <form action="{{ url_for('like_post', post_id=post.id) }}" method="POST" style="display: inline;">
+                        <button type="submit" class="action-btn" {% if post.id in user_likes %}style="color: #ff7b72;"{% endif %}>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="{% if post.id in user_likes %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                            <span>{{ post.likes_count }}</span>
+                        </button>
+                    </form>
+                    <button class="action-btn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+                        <span>댓글 {% if comments_by_post.get(post.id) %}{{ comments_by_post.get(post.id)|length }}{% else %}0{% endif %}</span>
+                    </button>
+                </div>
+                <div style="font-size: 13px; color: var(--text-secondary);">
+                    {{ post.created_at[:10] }}
+                </div>
+            </div>
+
+            <!-- 댓글 영역 -->
+            <div class="comments-section" style="margin-top: 15px; border-top: 1px dashed var(--glass-border); padding-top: 15px;">
+                {% if comments_by_post.get(post.id) %}
+                    <div class="comments-list">
+                        {% for c in comments_by_post.get(post.id) %}
+                            <div class="comment-item" style="margin-bottom: 8px; font-size: 14px; display: flex; justify-content: space-between; align-items: flex-start;">
+                                <div>
+                                    <strong style="color: var(--text-secondary);">{{ c.nickname }}</strong> <span style="color: var(--text-primary); margin-left: 5px;">{{ c.body }}</span>
+                                </div>
+                                {% if session.get('user_id') == c.user_id %}
+                                <form action="{{ url_for('delete_comment', comment_id=c.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('댓글을 삭제할까요?');">
+                                    <button type="submit" style="background: none; border: none; color: rgba(255,123,114,0.7); cursor: pointer; font-size: 12px; transition: color 0.3s;">✕</button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                {% if session.get('user_id') %}
+                    <form action="{{ url_for('comment', post_id=post.id) }}" method="POST" style="margin-top: 10px; display: flex; gap: 8px;">
+                        <input type="text" name="body" required placeholder="댓글 달기..." style="flex: 1; padding: 8px 12px; border-radius: 20px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.2); color: var(--text-primary); font-size: 13px;">
+                        <button type="submit" class="btn btn-primary" style="padding: 6px 14px; border-radius: 20px; font-size: 13px;">게시</button>
+                    </form>
+                {% else %}
+                    <div style="margin-top: 10px; font-size: 13px; color: var(--text-secondary);">
+                        댓글을 작성하려면 <a href="{{ url_for('login') }}" style="color: var(--accent-hover);">로그인</a>이 필요합니다.
+                    </div>
+                {% endif %}
+            </div>
+        </article>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">
+            <div style="font-size: 64px; margin-bottom: 24px;">🎧</div>
+            <h2>아직 등록된 추천 음악이 없어요</h2>
+            <p>플랫폼의 첫 번째 피드 작성자가 되어보세요!</p> <br>
+            <a href="{{ url_for('write') }}" class="btn btn-primary" style="margin-top: 10px;">+ 첫 추천글 작성하기</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

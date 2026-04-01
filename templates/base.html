@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>K-Music Hub | 한국 음악 추천 플랫폼</title>
+    <meta name="description" content="나만 알고 싶은 최애곡을 추천하고 공유하세요.">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header>
+        <div class="container nav-content">
+            <a href="{{ url_for('index') }}" class="brand">🎵 <span>K-Music Hub</span></a>
+            <nav class="nav-links">
+                <a href="{{ url_for('index') }}" class="link">탐색</a>
+                {% if session.get('user_id') %}
+                    <span class="welcome-text" style="color: var(--text-secondary); margin-right: 15px; font-size: 14px;"><strong>{{ session.get('nickname') }}</strong>님</span>
+                    <a href="{{ url_for('logout') }}" class="link">로그아웃</a>
+                    <a href="{{ url_for('write') }}" class="btn btn-primary">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        글 작성
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('login') }}" class="link">로그인</a>
+                    <a href="{{ url_for('register') }}" class="btn" style="background: transparent;">회원가입</a>
+                {% endif %}
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        {% block content %}
+        {% endblock %}
+    </main>
+</body>
+</html>

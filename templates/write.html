@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="write-container">
+    <div class="write-card">
+        <div style="margin-bottom: 24px;">
+            <a href="{{ url_for('index') }}" class="back-link">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                뒤로가기
+            </a>
+        </div>
+        
+        <h2>새로운 추천 음악 작성하기 🎧</h2>
+        <p>나만 알고 있는 인생곡을 모두에게 공유해 주세요!</p>
+
+        <form action="{{ url_for('write') }}" method="POST" class="auth-form" style="margin-top: 30px;">
+            <div class="form-group">
+                <label for="title">곡명 (Title) <span class="required">*</span></label>
+                <input type="text" id="title" name="title" required placeholder="예) 사건의 지평선">
+            </div>
+            
+            <div class="form-group">
+                <label for="artist">아티스트 (Artist) <span class="required">*</span></label>
+                <input type="text" id="artist" name="artist" required placeholder="예) 윤하 (YOUNHA)">
+            </div>
+            
+            <div class="form-group">
+                <label for="genre_tag">음악 분위기/장르 (Tags)</label>
+                <input type="text" id="genre_tag" name="genre_tag" placeholder="쉼표(,)로 구분해 입력 (예: #Kpop, #발라드, #드라이브)">
+            </div>
+
+            <div class="form-group">
+                <label for="youtube_url">유튜브 링크 (Youtube URL)</label>
+                <input type="url" id="youtube_url" name="youtube_url" placeholder="https://www.youtube.com/watch?v=...">
+                <small class="help-text">유튜브 영상 링크를 바로 올리면 피드에서 플레이어로 재생됩니다.</small>
+            </div>
+            
+            <div class="form-group">
+                <label for="content">추천 이유 (Description) <span class="required">*</span></label>
+                <textarea id="content" name="content" rows="6" required placeholder="이 곡을 추천하시는 특별한 이유나, 가장 좋아하시는 가사 한 소절을 적어주세요!"></textarea>
+            </div>
+            
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+                <a href="{{ url_for('index') }}" class="btn" style="background: transparent; color: var(--text-secondary);">취소</a>
+                <button type="submit" class="btn btn-primary">공유하기</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
