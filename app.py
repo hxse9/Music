@@ -2,17 +2,33 @@ from flask import Flask, render_template, request, redirect, url_for, g, session
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 import sqlite3
+import os
 
 app = Flask(__name__)
 app.secret_key = 'super_secret_dev_key'
 
-DATABASE = 'music.db'
+if os.environ.get('VERCEL') == '1':
+    DATABASE = '/tmp/music.db'
+else:
+    DATABASE = 'music.db'
 
 def get_db():
     db = getattr(g, '_database', None)
     if db is None:
         db = g._database = sqlite3.connect(DATABASE)
         db.row_factory = sqlite3.Row
+        
+        # Vercel 환경에서 DB 초기화하기
+        if os.environ.get('VERCEL') == '1':
+            cursor = db.cursor()
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='posts'")
+            if not cursor.fetchone():
+                try:
+                    with open('schema.sql', 'r', encoding='utf-8') as f:
+                        cursor.executescript(f.read())
+                    db.commit()
+                except Exception as e:
+                    print(f"Schema loading error: {e}")
     return db
 
 @app.teardown_appcontext
